@@ -33,6 +33,9 @@ jobs:
           environment-file: environment.yml
           python-version: 3.8
 
-      # Runs a set of commands using the runners shell
-      - name: Execute the notebooks
-        run: pytest
+      # Run the pytest suite to check all the notebooks in the repo
+      - name: Execute all Notebooks
+        shell: bash -l {0}
+        run: |
+          conda activate jupyter-actions
+          pytest
