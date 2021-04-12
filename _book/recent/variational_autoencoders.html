@@ -1,0 +1,330 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <title>Variational Autoencoders · HonKit</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="HonKit 3.6.19">
+        
+        
+        
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    
+    <link rel="prev" href="../" />
+    
+
+    </head>
+    <body>
+        
+<div class="book honkit-cloak">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter active" data-level="1.1.1" data-path="variational_autoencoders.html">
+            
+                <a href="variational_autoencoders.html">
+            
+                    
+                    Variational Autoencoders
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://github.com/honkit/honkit" target="blank" class="gitbook-link">
+            Published with HonKit
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >Variational Autoencoders</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <pre><code class="lang-python"><span class="hljs-keyword">import</span> torch 
+<span class="hljs-keyword">import</span> torch.nn <span class="hljs-keyword">as</span> nn
+
+torch.manual_seed(<span class="hljs-number">0</span>);
+</code></pre>
+<h1 id="variational-autoencoders">Variational Autoencoders</h1>
+<p>The basic setup for VAEs is this:</p>
+<p><img src="resources/vae_picture.png" alt></p>
+<p>We parameterise the encoder and decoder as neural networks. We&apos;d like to later use the decoder to sample things (e.g. images of faces), so we need that intermediate space to be something we know how to sample from (e.g. a Gaussian). </p>
+<p>One way to do this is to just have the output of the encoder be the parameters to a Gaussian:</p>
+<p><img src="resources/reparam_1.png" alt></p>
+<pre><code class="lang-python">x = torch.rand(<span class="hljs-number">5</span>)
+encoder = nn.Linear(<span class="hljs-number">5</span>, <span class="hljs-number">2</span>) 
+
+mu, var = encoder(x) 
+
+intermediate_representation = normal(mu, var).sample(<span class="hljs-number">1</span>)
+</code></pre>
+<p>This intermediate representation is what gets fed into the decoder. </p>
+<p>The problem is that our network pipeline now looks like this:</p>
+<p><img src="resources/reparam_2.png" alt></p>
+<p>The part where we sample the intermediate representation from the normal distribution is not differentiable, so we won&apos;t be able to get gradients back to our encoder. </p>
+<p>To solve this we use the reparameterisation trick. </p>
+<h2 id="the-reparameterisation-trick">The Reparameterisation Trick</h2>
+<p>The reparameterisation trick is really simple: we just take a sample from a unit Gaussian and add this into our model as an input. Specifically, we sample a value, multiply it by $\sigma$ and add $\mu$. </p>
+<p>I.e. if we have a sample $x$ from a normal distribution with mean 0 and variance 1 then $\sigma x + \mu$ will be a sample with mean $\mu$ and variance $\sigma^2$.</p>
+<p>A picture:</p>
+<p><img src="resources/reparam_3.png" alt></p>
+<p>Note we still can&apos;t backpropagate through sampling, but now we don&apos;t need to, the sample is just another input (like the image) to our model. So we could get a gradient for the specific value that we sampled, but we don&apos;t need to backpropagate any further.</p>
+<pre><code class="lang-python">encoder = nn.Linear(<span class="hljs-number">5</span>, <span class="hljs-number">2</span>)
+decoder = nn.Linear(<span class="hljs-number">1</span>, <span class="hljs-number">5</span>)
+
+x = torch.rand(<span class="hljs-number">5</span>)
+
+z = encoder(x)
+h = torch.rand(<span class="hljs-number">1</span>)
+z = (z[<span class="hljs-number">1</span>] * h) + z[<span class="hljs-number">0</span>] <span class="hljs-comment"># reparameterisation trick</span>
+decoder(z)
+</code></pre>
+<pre><code>tensor([ 1.0016, -0.3996, -0.2622,  0.3476,  0.6642], grad_fn=&lt;AddBackward0&gt;)
+</code></pre><p>Now we have a way to do the forward pass, we need a loss function.</p>
+<h2 id="the-elbo-loss-function">The ELBO loss function</h2>
+<pre><code class="lang-python">
+
+</code></pre>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="../" class="navigation navigation-prev navigation-unique" aria-label="Previous page: Introduction">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Variational Autoencoders","level":"1.1.1","depth":2,"previous":{"title":"Introduction","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[{"title":"Variational Autoencoders","level":"1.1.1","depth":2,"path":"recent/variational_autoencoders.md","ref":"recent/variational_autoencoders.md","articles":[]}]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["livereload"],"pluginsConfig":{"livereload":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56},"embedFonts":false},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"recent/variational_autoencoders.md","mtime":"2021-04-12T13:27:38.540Z","type":"markdown"},"gitbook":{"version":"3.6.19","time":"2021-04-12T13:35:14.489Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <noscript>
+        <style>
+            .honkit-cloak {
+                display: block !important;
+            }
+        </style>
+    </noscript>
+    <script>
+        // Restore sidebar state as critical path for prevent layout shift
+        function __init__getSidebarState(defaultValue){
+            var baseKey = "";
+            var key = baseKey + ":sidebar";
+            try {
+                var value = localStorage[key];
+                if (value === undefined) {
+                    return defaultValue;
+                }
+                var parsed = JSON.parse(value);
+                return parsed == null ? defaultValue : parsed;
+            } catch (e) {
+                return defaultValue;
+            }
+        }
+        function __init__restoreLastSidebarState() {
+            var isMobile = window.matchMedia("(max-width: 600px)").matches;
+            if (isMobile) {
+                // Init last state if not mobile
+                return;
+            }
+            var sidebarState = __init__getSidebarState(true);
+            var book = document.querySelector(".book");
+            // Show sidebar if it enabled
+            if (sidebarState && book) {
+                book.classList.add("without-animation", "with-summary");
+            }
+        }
+
+        try {
+            __init__restoreLastSidebarState();
+        } finally {
+            var book = document.querySelector(".book");
+            book.classList.remove("honkit-cloak");
+        }
+    </script>
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-livereload/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+
