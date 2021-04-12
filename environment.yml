@@ -1,7 +1,6 @@
 name: jupyter-actions
 channels:
   - conda-forge
-  - pytorch
   - defaults
 dependencies:
   - jupyter=1.0
@@ -10,5 +9,3 @@ dependencies:
   - numpy=1.18
   - requests=2.24.0
   - pytest
-  - pytorch=1.8.1
-
