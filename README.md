@@ -1,4 +1,4 @@
-# Topics to know 
+# Topics to know
 
 | All recent methods/ideas a modern machine learner should really know and be able to describe in technical detail        | All neo-classical ( pre 2010 :) ) methods/ideas a modern machine learner should really know and be able to describe in technical detail |
 |-------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|

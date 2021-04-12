@@ -1,0 +1,52 @@
+{
+  "honkit": ">= 3.6.16",
+  "root": "./",
+  "title": "Stuff To Know",
+  "plugins": [
+    "bibtex-cite",
+    "wordcount",
+    "include-codeblock",
+    "prism",
+    "-highlight"
+  ],
+  "lunr": {
+    "maxIndexSize": 1000000000
+  },
+  "pluginsConfig": {
+    "mathjax": {
+      "version": "3.0.0"
+    },
+    "include-codeblock": {
+      "fixlang": true,
+      "unindent": true
+    },
+    "prism": {
+      "lang": {
+        "asm-x64": "nasm"
+      },
+      "ignore": [
+        "emojicode",
+        "text"
+      ],
+      "css": [
+        "prismjs/themes/prism-tomorrow.css"
+      ]
+    },
+    "api-language-selector": {
+      "languages": [
+        {
+          "lang": "py",
+          "name": "Python"
+        },
+        {
+          "lang": "rs",
+          "name": "Rust"
+        },
+        {
+          "lang": "ml",
+          "name": "OCaml"
+        }
+      ]
+    }
+  }
+}
