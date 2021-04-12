@@ -1,5 +1,7 @@
 # Topics to know
 
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/bayeswatch/stuff-to-know/CI)
+
 | All recent methods/ideas a modern machine learner should really know and be able to describe in technical detail        | All neo-classical ( pre 2010 :) ) methods/ideas a modern machine learner should really know and be able to describe in technical detail |
 |-------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
 | Knowledge Distillation                                                                                                  | Principal Component Analysis                                                                                                            |
