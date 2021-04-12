@@ -1,7 +1,6 @@
 name: jupyter-actions
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - jupyter=1.0
   - nbformat
