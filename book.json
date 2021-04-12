@@ -1,6 +1,6 @@
 {
   "honkit": ">= 3.6.16",
-  "root": "./",
+  "root": "./_book",
   "title": "Stuff To Know",
   "plugins": [
     "bibtex-cite",
